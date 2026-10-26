@@ -1,0 +1,131 @@
+/* ===== CARTE: faccia, dorso, mazzo, overlay animazioni, carte in volo ===== */
+
+/* dimensioni (le uniche cose da toccare per ingrandire/rimpicciolire le carte) */
+:root { --card-w: 5.8rem; --card-h: 8.6rem; }
+@media (min-width: 700px)  { :root { --card-w: 7.2rem; --card-h: 10.8rem; } }
+@media (min-width: 1100px) { :root { --card-w: 8.4rem; --card-h: 12.4rem; } }
+
+/* ---------- faccia ---------- */
+.card {
+  --c: var(--paper-2);
+  position: relative; flex-shrink: 0; display: flex; flex-direction: column; gap: .2rem;
+  width: var(--card-w); height: var(--card-h); padding: .4rem;
+  background: var(--paper); color: var(--ink); text-shadow: none;
+  border: 3px solid var(--ink); border-radius: 10px;
+  box-shadow: inset 0 0 0 2px #fff9, 0 5px 0 rgba(0,0,0,.5), 0 10px 16px rgba(0,0,0,.45);
+  user-select: none; transition: transform .18s, box-shadow .18s, filter .18s;
+}
+.card--playable { cursor: pointer; }
+.card--playable:hover { transform: translateY(-.35rem); }
+.card--disabled { filter: grayscale(.55) brightness(.78); }
+
+.card.card--selected {                       /* 1° clic: alzata ed evidenziata */
+  transform: translateY(-1.1rem) scale(1.06); z-index: 5;
+  box-shadow: 0 0 0 3px var(--yellow), 0 0 22px 4px rgba(255,210,63,.75), 0 14px 22px rgba(0,0,0,.6);
+}
+.card--targeted { box-shadow: 0 0 0 3px var(--red), 0 0 20px 4px rgba(255,75,62,.8); animation: card-pulse 1s steps(2) infinite; }
+.card--hidden { visibility: hidden; }        /* appena pescata, ancora "in volo" */
+.card--reveal { animation: card-reveal .3s ease-out both; }
+.card--table  { position: absolute; inset: 0; width: auto; height: auto; transform: rotate(4deg); box-shadow: 0 0 0 3px var(--yellow), 0 8px 0 rgba(0,0,0,.5); }
+
+.card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: .2rem; }
+.card__name { font-size: 1rem; line-height: .95; color: var(--ink); text-transform: uppercase; letter-spacing: .02em; }
+.card__cost {
+  flex-shrink: 0; min-width: 1.35rem; height: 1.35rem; padding: 0 .2rem; display: flex; align-items: center; justify-content: center;
+  background: var(--ink); color: var(--yellow); border-radius: 50%; font-size: 1rem; text-shadow: none;
+}
+.card__art {
+  flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.14) 0 4px, transparent 4px 8px), var(--c);
+  border: 2px solid var(--ink); border-radius: 4px; font-size: 2.2rem;
+}
+.card__img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.card__art--attack  { --c: var(--type-attack); }
+.card__art--defense { --c: var(--type-defense); }
+.card__art--spell   { --c: var(--type-spell); }
+.card__art--trap    { --c: var(--type-trap); }
+.card__type { font-size: .95rem; text-transform: uppercase; letter-spacing: .05em; }
+.card__type--attack  { color: var(--type-attack); }
+.card__type--defense { color: var(--type-defense); }
+.card__type--spell   { color: var(--type-spell); }
+.card__type--trap    { color: #c4690f; }
+.card__text { font-size: .95rem; line-height: .9; color: #3a2f50; overflow: hidden; }
+
+/* ---------- dorso ---------- */
+.card-back {
+  background-color: #b3262e;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.2) 0 3px, transparent 3px 6px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,.18) 0 3px, transparent 3px 6px);
+  border: 2px solid var(--paper); border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px rgba(0,0,0,.5);
+}
+.card-back--mini { display: inline-block; width: .9rem; height: 1.3rem; margin-left: -.5rem; }
+.card-back--mini:first-child { margin-left: 0; }
+.card-back--pick { width: 2.3rem; height: 3.4rem; cursor: pointer; transition: transform .12s; }
+.card-back--pick:hover { transform: translateY(-.3rem); }
+.card-back--pick.is-selected { transform: translateY(-.3rem); border-color: var(--yellow); box-shadow: 0 0 0 2px var(--red), 0 0 12px var(--red); }
+.fly-card { position: fixed; z-index: 60; pointer-events: none; width: 3.5rem; height: 5rem; }
+
+/* ---------- mazzo e pila al centro del tavolo ---------- */
+.table-center { display: flex; align-items: center; justify-content: center; gap: 2.2rem; padding: .6rem 0; flex: 1; min-height: 0; }
+.pile-wrap { display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+.pile-label { font-family: var(--font-display); font-size: .45rem; color: rgba(255,255,255,.75); text-transform: uppercase; text-align: center; }
+.deck, .pile { position: relative; width: var(--card-w); height: var(--card-h); border-radius: 10px; }
+.deck {
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  border: 3px solid var(--paper); font-size: 2rem; color: rgba(255,255,255,.7);
+  box-shadow: 0 0 0 3px var(--ink), 0 4px 0 3px var(--ink), 6px 8px 0 0 #7d1a20, 6px 8px 0 3px var(--ink);
+  background-color: #b3262e;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.2) 0 4px, transparent 4px 8px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 8px);
+  transition: transform .12s;
+}
+.deck:hover { transform: translateY(-4px); }
+.deck:active { transform: translateY(0); }
+.deck__count {
+  position: absolute; bottom: -.9rem; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: .15rem .6rem;
+  background: var(--ink); color: var(--yellow); border: 3px solid var(--paper); font-family: var(--font-display); font-size: .5rem;
+}
+.pile { display: flex; align-items: center; justify-content: center; border: 3px dashed rgba(255,255,255,.3); background: rgba(0,0,0,.25); }
+.pile__empty { padding: .4rem; text-align: center; font-size: 1rem; color: rgba(255,255,255,.4); }
+
+/* ---------- overlay animazioni carta attivata / distrutta ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;
+  background: rgba(8, 4, 16, .86); backdrop-filter: blur(4px); pointer-events: none; opacity: 0; transition: opacity .3s;
+}
+.overlay.is-visible { opacity: 1; }
+.overlay__title {
+  margin-bottom: 1.4rem; padding: 0 1rem; text-align: center; font-family: var(--font-display); font-size: .85rem; line-height: 1.6;
+  color: var(--yellow); text-shadow: 0 0 12px rgba(255,210,63,.8), 3px 3px 0 var(--ink);
+}
+.overlay__title--destroy { color: var(--pink); text-shadow: 0 0 12px rgba(255,61,129,.8), 3px 3px 0 var(--ink); }
+.overlay__grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 1.4rem; max-width: 64rem; width: 100%; }
+.overlay__item { display: flex; flex-direction: column; align-items: center; gap: .7rem; transform: scale(.7); transition: transform .3s ease-out; }
+.overlay.is-visible .overlay__item { transform: scale(1); }
+.card--overlay { --card-w: 9.5rem; --card-h: 14rem; }
+@media (min-width: 700px) { .card--overlay { --card-w: 11.5rem; --card-h: 17rem; } }
+.card--activate { box-shadow: 0 0 0 4px var(--yellow), 0 0 50px 10px rgba(255,210,63,.8); }
+.card--destroy  { box-shadow: 0 0 0 4px var(--pink), 0 0 50px 10px rgba(255,61,129,.8); animation: card-pulse 1s steps(2) infinite; }
+.fx-badge { padding: .25rem .8rem; border: 3px solid; font-size: 1.1rem; animation: fx-bounce .9s steps(2) infinite; }
+.fx-badge--damage { background: #3b1018; color: #ffd0d8; border-color: var(--red); }
+.fx-badge--heal   { background: #0f3324; color: #c2ffdf; border-color: var(--green); }
+
+@keyframes card-reveal { from { opacity: 0; transform: scale(.6) translateY(-30px); } to { opacity: 1; transform: none; } }
+@keyframes card-pulse  { 50% { opacity: .7; } }
+@keyframes fx-bounce   { 50% { transform: translateY(-4px); } }
+
+/* ---------- mobile: la mano si sovrappone a ventaglio, il testo compare sulla carta selezionata ---------- */
+@media (max-width: 699px) {
+  .hand > .card + .card { margin-left: -2.2rem; }
+  .hand .card__text { display: none; }
+  .hand .card.card--selected { transform: translateY(-1.8rem) scale(1.55); transform-origin: 50% 100%; }
+  .hand .card--selected .card__text { display: block; font-size: .85rem; }
+  .hand .card--selected .card__art { flex: 0 0 1.6rem; font-size: 1.1rem; }
+  .card--table .card__text, .overlay .card__text { display: block; }
+  .card--table .card__text { font-size: .8rem; }
+  .overlay__title { font-size: .65rem; }
+}

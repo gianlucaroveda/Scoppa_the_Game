@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#140c24">
+    <title>Card Game P2P</title>
+
+    <!-- Icone, PeerJS, font pixel -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+    <!-- TUTTO L'ASPETTO È QUI (nessun Tailwind). Ordine importante. -->
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/lobby.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/effects.css">
+    <link rel="stylesheet" href="css/crt.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="topbar">
+        <div class="topbar__brand">
+            <div class="topbar__logo">♠</div>
+            <div>
+                <h1 class="topbar__title">CARD ENGINE</h1>
+                <p id="view-subtitle" class="topbar__sub">Fase: Creazione e Gestione Stanza</p>
+            </div>
+        </div>
+        <div class="topbar__actions">
+            <span id="role-badge" class="badge">Disconnesso</span>
+            <button data-action="toggleCrt" class="btn btn--sm btn--cyan" title="Attiva/disattiva effetto CRT">CRT</button>
+            <button id="btn-leave-game" data-action="leaveRoom" class="btn btn--sm btn--danger hidden">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>Esci</span>
+            </button>
+        </div>
+    </header>
+
+    <main style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative;">
+
+        <!-- ===== VIEW 1: LOBBY (sala giochi) ===== -->
+        <section id="view-lobby" class="arcade">
+
+            <aside class="lobby-side">
+                <div class="panel">
+                    <div class="panel__title">Profilo</div>
+                    <div class="row">
+                        <input id="nickname-input" type="text" placeholder="Il tuo nome..." class="input" maxlength="20">
+                        <button data-action="updateNickname" class="btn btn--sm" title="Salva nome"><i class="fa-solid fa-floppy-disk"></i></button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel__title">Stanza</div>
+
+                    <div id="room-controls-disconnected" class="stack">
+                        <button data-action="createRoom" class="btn btn--success btn--block btn--lg"><i class="fa-solid fa-plus"></i> Crea stanza</button>
+                        <div class="divider">oppure entra</div>
+                        <div class="row">
+                            <input id="join-room-id" type="text" placeholder="ID stanza..." class="input input--code">
+                            <button data-action="joinRoom" class="btn btn--primary">Entra</button>
+                        </div>
+                    </div>
+
+                    <div id="room-controls-connected" class="stack hidden">
+                        <div class="row row--between">
+                            <span class="muted">ID stanza</span>
+                            <span id="display-room-id" class="badge badge--host badge--id">---</span>
+                        </div>
+                        <button data-action="copyRoomLink" class="btn btn--sm btn--block"><i class="fa-regular fa-copy"></i> Copia ID</button>
+                        <button id="btn-start-game" data-action="startGame" class="btn btn--primary btn--block btn--lg hidden"><i class="fa-solid fa-play"></i> Avvia partita</button>
+                        <p id="client-wait-msg" class="hint-wait hidden">In attesa dell'host...</p>
+                        <button id="btn-destroy-room" data-action="destroyRoom" class="btn btn--sm btn--danger btn--block hidden"><i class="fa-solid fa-trash-can"></i> Chiudi stanza</button>
+                    </div>
+                </div>
+
+                <div class="panel stack" style="flex:1;min-height:9rem;">
+                    <div class="panel__title" style="margin-bottom:0;"><i class="fa-solid fa-terminal"></i> Log P2P</div>
+                    <div id="network-log" class="log"><div class="muted">[Sistema] In attesa di creazione o accesso ad una stanza.</div></div>
+                </div>
+            </aside>
+
+            <section class="lobby-main">
+                <div class="marquee">
+                    <h2 class="marquee__title">CARD<br>ARCADE</h2>
+                    <p class="marquee__sub">▶ INSERT COIN ◀</p>
+                </div>
+                <div class="lobby-count"><span>GIOCATORI</span><b id="player-count-badge">0</b></div>
+                <div id="players-grid" class="slots">
+                    <div class="slot slot--empty">Non sei collegato a nessuna stanza.<br>Crea una stanza o inserisci un ID.</div>
+                </div>
+            </section>
+        </section>
+
+        <!-- ===== VIEW 2: SCELTA AVATAR ===== -->
+        <section id="view-avatars" class="avatar-screen hidden">
+            <div class="panel avatar-box">
+                <h2>SCEGLI IL TUO AVATAR</h2>
+                <p id="avatar-status"></p>
+                <div id="avatar-grid" class="avatar-grid"></div>
+            </div>
+        </section>
+
+        <!-- ===== VIEW 3: TAVOLO ===== -->
+        <section id="view-game" class="felt hidden">
+
+            <div id="game-over" class="gameover hidden">
+                <div class="gameover__box">
+                    <div class="gameover__trophy">🏆</div>
+                    <h2 id="winner-text" class="gameover__text"></h2>
+                    <p class="gameover__sub">Premi "Esci" per tornare alla lobby.</p>
+                </div>
+            </div>
+
+            <div id="turn-bar" class="turn-bar">
+                <div id="turn-order" class="turn-order"></div>
+                <div class="turn-bar__right">
+                    <div id="phase-hint" class="phase-hint"></div>
+                </div>
+            </div>
+
+            <div id="opponents-game-container" class="opps"></div>
+
+            <div class="table-center">
+                <div class="pile-wrap">
+                    <div id="deck-pile" data-action="playerDrawCard" class="deck">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span id="deck-count" class="deck__count">0 carte</span>
+                    </div>
+                    <span class="pile-label">Pesca</span>
+                </div>
+                <div class="pile-wrap">
+                    <div id="played-pile" class="pile">
+                        <span id="empty-table-text" class="pile__empty">Tavolo vuoto</span>
+                    </div>
+                    <span class="pile-label">Giocata</span>
+                </div>
+            </div>
+
+            <div class="me">
+                <div id="defense-prompt" class="defense-prompt hidden">
+                    <span id="defense-prompt-text"></span>
+                </div>
+                <div class="me__bar">
+                    <span class="me__label"><i class="fa-solid fa-lock"></i> Mano (<span id="hand-count">0</span>)</span>
+                    <span id="my-stats" class="me__stats"></span>
+                </div>
+                <div id="my-hand" class="hand">
+                    <div class="hand__empty">La tua mano è vuota.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container" class="toasts"></div>
+
+    <!-- Overlay CRT (spegnibile con il bottone CRT) -->
+    <div id="crt" aria-hidden="true">
+        <div class="crt__glow"></div><div class="crt__scan"></div><div class="crt__mask"></div><div class="crt__roll"></div><div class="crt__vig"></div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

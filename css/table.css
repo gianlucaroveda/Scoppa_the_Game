@@ -1,0 +1,92 @@
+/* ===== TAVOLO DA GIOCO: feltro, barra turni, avversari, mano, fine partita ===== */
+.felt {
+  position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .6rem; padding: .7rem; overflow-y: auto;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 14px, transparent 14px 28px),
+    radial-gradient(ellipse at center, var(--felt-1) 0%, var(--felt-2) 80%);
+}
+
+/* ---------- barra turni ---------- */
+.turn-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; padding: .5rem .7rem; z-index: 10;
+  background: rgba(20,12,36,.88); border: 3px solid var(--ink); box-shadow: 0 0 0 3px var(--line), var(--hard-shadow);
+}
+.turn-order { display: flex; align-items: center; gap: .35rem; overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
+.chip {
+  display: flex; align-items: center; gap: .35rem; flex-shrink: 0; padding: .2rem .5rem; background: var(--ink-2);
+  border: 3px solid var(--line); color: var(--text); font-size: 1rem;
+}
+.chip__n { color: var(--text-dim); }
+.chip--current { background: var(--yellow); border-color: var(--ink); color: var(--ink); text-shadow: none; box-shadow: 0 0 12px rgba(255,210,63,.7); }
+.chip--current .chip__n { color: var(--ink); }
+.chip--out { opacity: .45; text-decoration: line-through; }
+.chip-sep { flex-shrink: 0; color: var(--text-dim); font-size: .9rem; }
+.turn-bar__right { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+.phase-hint { font-size: 1.05rem; color: var(--yellow); line-height: 1.05; }
+
+.host-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .4rem .7rem; z-index: 10;
+  background: rgba(20,12,36,.88); border: 3px solid var(--ink); box-shadow: 0 0 0 3px var(--yellow), var(--hard-shadow);
+}
+.host-bar__title { display: flex; align-items: center; gap: .5rem; font-family: var(--font-display); font-size: .5rem; color: var(--yellow); }
+.host-bar__actions { display: flex; gap: .5rem; }
+
+/* ---------- avversari ---------- */
+.opps { display: flex; justify-content: center; align-items: stretch; gap: .8rem; min-height: 5.5rem; padding: .3rem .2rem; overflow-x: auto; }
+.opps__wait { align-self: center; padding: .4rem .9rem; background: rgba(0,0,0,.35); color: rgba(255,255,255,.6); font-size: 1rem; }
+.opp {
+  display: flex; flex-direction: column; align-items: center; gap: .1rem; flex-shrink: 0; min-width: 6.5rem; padding: .5rem .6rem; text-align: center;
+  background: rgba(20,12,36,.75); border: 3px solid rgba(255,255,255,.15); box-shadow: var(--hard-shadow);
+}
+.opp--turn { border-color: var(--yellow); box-shadow: 0 0 14px rgba(255,210,63,.55), var(--hard-shadow); }
+.opp--attacked { border-color: var(--red); box-shadow: 0 0 14px rgba(255,75,62,.7), var(--hard-shadow); }
+.opp--out { opacity: .4; filter: grayscale(.8); }
+.opp--targetable { cursor: pointer; border-color: var(--pink); animation: card-pulse 1s steps(2) infinite; }
+.opp--picking { border-color: var(--pink); }
+.opp__name { display: flex; align-items: center; gap: .3rem; font-size: 1.1rem; color: var(--text); }
+.opp__name i { color: var(--yellow); font-size: .7rem; }
+.opp__hand { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .3rem; min-height: 1.5rem; max-width: 15rem; margin: .2rem 0; }
+.opp__empty { font-size: .9rem; color: rgba(255,255,255,.4); }
+.opp__count { font-size: .9rem; color: var(--yellow); }
+.opp__stats { font-size: .95rem; color: var(--pink); }
+
+/* ---------- mia mano ---------- */
+.me { width: 100%; max-width: 62rem; margin: 0 auto; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.me__bar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; margin-bottom: .4rem; padding: 0 .2rem; }
+.me__label { padding: .25rem .6rem; background: rgba(20,12,36,.85); border: 3px solid var(--ink); box-shadow: 0 0 0 2px var(--yellow); font-family: var(--font-display); font-size: .5rem; color: var(--yellow); text-transform: uppercase; }
+.me__stats { display: flex; align-items: center; gap: .6rem; padding: .2rem .6rem; background: rgba(20,12,36,.85); border: 3px solid var(--ink); font-size: 1.1rem; }
+.me__stats span + span { color: var(--yellow); }
+.hand {
+  display: flex; align-items: center; gap: .5rem; width: 100%; min-height: calc(var(--card-h) + 2.6rem); padding: 1.8rem .8rem .8rem; overflow-x: auto;
+  background: rgba(0,0,0,.32); border: 3px solid rgba(255,255,255,.12); border-radius: 14px;
+}
+.hand > :first-child { margin-left: auto; }
+.hand > :last-child  { margin-right: auto; }
+.hand__empty { margin: 0 auto; padding: 1rem; font-size: 1.1rem; color: rgba(255,255,255,.4); }
+
+/* ---------- fine partita ---------- */
+.gameover { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(8,4,16,.82); }
+.gameover__box { text-align: center; padding: 1.6rem 1.4rem; background: var(--panel); border: 4px solid var(--ink); box-shadow: 0 0 0 4px var(--yellow), 0 0 30px rgba(255,210,63,.6); max-width: 26rem; }
+.gameover__trophy { font-size: 3rem; animation: fx-bounce .9s steps(2) infinite; }
+.gameover__text { display: flex; align-items: center; justify-content: center; gap: .6rem; margin: .8rem 0; font-family: var(--font-display); font-size: .8rem; line-height: 1.6; color: var(--yellow); }
+.gameover__sub { color: var(--text-dim); }
+
+/* ---------- mobile ---------- */
+@media (max-width: 699px) {
+  .felt { padding: .45rem; gap: .4rem; }
+  .turn-bar { padding: .35rem .5rem; }
+  .phase-hint { font-size: .95rem; }
+  .opps { justify-content: flex-start; gap: .5rem; min-height: 4.8rem; }
+  .opp { min-width: 5.5rem; padding: .35rem .4rem; }
+  .opp__hand { max-width: 11rem; }
+  .table-center { gap: 1.4rem; padding: .2rem 0; }
+  .host-bar { flex-wrap: wrap; }
+  .hand { padding: 2.2rem .6rem .8rem; min-height: calc(var(--card-h) + 3.4rem); }
+  .me__label { font-size: .42rem; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .host-bar { display: none !important; }
+  .table-center { padding: 0; }
+  :root { --card-w: 5rem; --card-h: 7.4rem; }
+  .hand { min-height: auto; padding-top: 1.4rem; }
+}

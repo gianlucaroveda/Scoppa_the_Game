@@ -1,0 +1,53 @@
+/* ===== EFFETTO CRT (stile Balatro): scanline, maschera RGB, vignettatura, rolling bar, flicker, aberrazione cromatica ===== */
+:root {
+  --crt-scan: .30;        /* intensità scanline        0 - 1 */
+  --crt-mask: .10;        /* maschera RGB              0 - 1 */
+  --crt-vignette: .70;    /* vignettatura ai bordi     0 - 1 */
+  --crt-roll: .06;        /* barra che scorre          0 - 1 */
+  --crt-aberration: .7px; /* sfasamento colori testo   0 = off */
+}
+
+#crt { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
+#crt > div { position: absolute; inset: 0; }
+
+.crt__scan {
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,var(--crt-scan)) 0 1px, transparent 1px 3px);
+}
+.crt__mask {
+  background: repeating-linear-gradient(90deg,
+    rgba(255,0,0,var(--crt-mask)) 0 1px, rgba(0,255,0,var(--crt-mask)) 1px 2px, rgba(0,0,255,var(--crt-mask)) 2px 3px);
+  mix-blend-mode: overlay;
+}
+.crt__roll {
+  top: -20%; bottom: auto; height: 20%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,var(--crt-roll)), transparent);
+  animation: crt-roll 7s linear infinite;
+}
+.crt__vig {
+  background:
+    radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,calc(var(--crt-vignette) * .6)) 82%, rgba(0,0,0,var(--crt-vignette)) 100%);
+  box-shadow: inset 0 0 90px 10px rgba(51, 51, 51, 0.26);
+  border-radius: 22px / 26px; /* angoli dello schermo "bombato" */
+}
+.crt__glow {
+  background: rgba(126, 126, 126, 0.048);
+  animation: crt-flicker 3.2s steps(1) infinite;
+}
+
+/* aberrazione cromatica: i testi hanno un'ombra rossa/azzurra sfalsata */
+body:not(.crt-off) { text-shadow: var(--crt-aberration) 0 rgba(255,40,90,.45), calc(var(--crt-aberration) * -1) 0 rgba(40,220,255,.45); }
+body:not(.crt-off) .felt, body:not(.crt-off) .arcade { animation: crt-jitter 6s steps(1) infinite; }
+
+body.crt-off #crt { display: none; }
+
+@keyframes crt-roll { to { transform: translateY(600%); } }
+@keyframes crt-flicker { 0%, 100% { opacity: 1; } 47% { opacity: .55; } 49% { opacity: 1; } 83% { opacity: .75; } }
+@keyframes crt-jitter { 0%, 100% { transform: none; } 93% { transform: translateX(1px); } 94% { transform: translateX(-1px); } 95% { transform: none; } }
+
+@media (max-width: 700px) {
+  :root { --crt-mask: .05; --crt-vignette: .55; }
+  .crt__vig { border-radius: 0; box-shadow: inset 0 0 50px 4px rgba(0, 0, 0, 0.288); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt__roll, .crt__glow, body .felt, body .arcade { animation: none !important; }
+}

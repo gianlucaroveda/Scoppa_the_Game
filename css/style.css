@@ -1,0 +1,23 @@
+body { font-family: 'Inter', sans-serif; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Sfondo Tavolo da Gioco in Feltro */
+.felt-table {
+    background-color: #106b08; /* Colore di riserva (fallback) mentre carica la GIF */
+    background-image: url('sfondo.jpg'); /* GIF animata del feltro */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* Animazione Carte */
+.card-transition {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-transition:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+}

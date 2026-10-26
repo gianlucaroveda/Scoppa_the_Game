@@ -1,0 +1,85 @@
+/* ===== LOBBY: sala giochi pixel con pavimento a griglia neon ===== */
+.arcade {
+  position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: 23rem 1fr; overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 2px) 0 0 / 90px 90px,
+    radial-gradient(circle at 70% 60%, var(--cyan) 0 1px, transparent 2px) 0 0 / 130px 130px,
+    radial-gradient(circle at 50% 0%, #4a1a7a 0%, #1a0b33 55%, #0d0620 100%);
+}
+/* pavimento prospettico animato */
+.arcade::before {
+  content: ''; position: absolute; left: -60%; right: -60%; bottom: -5%; height: 55%; pointer-events: none; opacity: .45;
+  background:
+    repeating-linear-gradient(90deg, var(--pink) 0 2px, transparent 2px 56px),
+    repeating-linear-gradient(0deg, var(--cyan) 0 2px, transparent 2px 56px);
+  transform: perspective(320px) rotateX(62deg); transform-origin: bottom;
+  animation: grid-scroll 1.6s linear infinite;
+}
+.arcade > * { position: relative; z-index: 1; }
+
+.lobby-side {
+  display: flex; flex-direction: column; gap: 1rem; padding: 1rem; overflow-y: auto; min-height: 0;
+  background: rgba(20, 12, 36, .82); border-right: 4px solid var(--pink);
+}
+.lobby-main { display: flex; flex-direction: column; gap: 1rem; padding: 1.2rem; overflow-y: auto; min-height: 0; }
+
+/* titolo "insegna al neon" */
+.marquee { text-align: center; }
+.marquee__title {
+  font-family: var(--font-display); font-size: 1.1rem; line-height: 1.5; color: var(--pink); letter-spacing: .08em;
+  text-shadow: 0 0 6px var(--pink), 0 0 18px var(--pink), 3px 3px 0 var(--ink);
+}
+.marquee__sub {
+  margin-top: .6rem; font-family: var(--font-display); font-size: .55rem; color: var(--yellow);
+  animation: blink 1s steps(2) infinite;
+}
+.lobby-count { display: flex; align-items: center; justify-content: center; gap: .6rem; font-family: var(--font-display); font-size: .5rem; color: var(--text-dim); }
+.lobby-count b { color: var(--yellow); font-size: .8rem; }
+
+/* slot giocatore */
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
+.slot {
+  display: flex; align-items: center; gap: .8rem; padding: .8rem; background: var(--panel);
+  border: 4px solid var(--ink); box-shadow: 0 0 0 3px var(--line), 0 6px 0 3px rgba(0,0,0,.45);
+}
+.slot--me { box-shadow: 0 0 0 3px var(--yellow), 0 6px 0 3px rgba(0,0,0,.45), 0 0 16px rgba(255,210,63,.4); }
+.slot__tag {
+  width: 2.6rem; height: 2.6rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--ink); border: 3px solid var(--line); font-family: var(--font-display); font-size: .6rem; color: var(--cyan);
+}
+.slot--host .slot__tag { color: var(--yellow); border-color: var(--yellow); }
+.slot__name { font-size: 1.25rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot__id { font-size: .8rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 11rem; }
+.slot__info { min-width: 0; }
+.slot--empty { grid-column: 1 / -1; justify-content: center; padding: 1.6rem; border-style: dashed; color: var(--text-dim); text-align: center; flex-direction: column; }
+
+/* ---------- scelta avatar ---------- */
+.avatar-screen {
+  position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;
+  background: radial-gradient(circle at 50% 0%, #4a1a7a 0%, #1a0b33 60%, #0d0620 100%);
+}
+.avatar-box { width: min(38rem, 100%); text-align: center; }
+.avatar-box h2 { font-family: var(--font-display); font-size: .9rem; color: var(--yellow); margin-bottom: .6rem; text-shadow: 0 0 10px rgba(255,210,63,.6); }
+.avatar-box p { color: var(--text-dim); margin-bottom: 1rem; }
+.avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+.avatar-btn {
+  display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .7rem .3rem; background: var(--ink-2);
+  border: 4px solid var(--line); box-shadow: var(--hard-shadow); transition: transform .1s, border-color .1s;
+}
+.avatar-btn:not(:disabled):hover { transform: translateY(-4px); border-color: var(--cyan); }
+.avatar-btn--mine { border-color: var(--yellow); background: rgba(255,210,63,.12); box-shadow: 0 0 14px rgba(255,210,63,.5); }
+.avatar-btn:disabled { opacity: .35; filter: grayscale(.8); }
+.avatar-btn__name { font-size: 1rem; color: var(--text); }
+.avatar-btn__owner { min-height: 1rem; font-size: .85rem; color: var(--yellow); }
+
+@keyframes grid-scroll { to { background-position: 0 56px, 0 56px; } }
+
+/* ---------- mobile ---------- */
+@media (max-width: 800px) {
+  .arcade { display: flex; flex-direction: column; overflow-y: auto; }
+  .lobby-side { border-right: 0; border-bottom: 4px solid var(--pink); overflow: visible; flex-shrink: 0; }
+  .lobby-main { overflow: visible; padding: .9rem; }
+  .log { max-height: 7rem; flex: none; }
+  .marquee__title { font-size: .85rem; }
+  .avatar-grid { grid-template-columns: repeat(2, 1fr); }
+}
