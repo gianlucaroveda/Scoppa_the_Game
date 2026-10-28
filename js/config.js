@@ -31,4 +31,4 @@ export const CARD_OVERLAY_MULTI_MS = 3200;  // overlay con più carte distrutte
 export const AUTO_RESOLVE_DELAY_MS = 1500;  // attacco su carte non difensive: si risolve da solo
 
 // Avatar: immagini nella cartella avatar/ (il file di ogni avatar si imposta in game/avatars.js)
-export const AVATAR_DIR = 'js/game/avatar/';
+export const AVATAR_DIR = 'avatar/';

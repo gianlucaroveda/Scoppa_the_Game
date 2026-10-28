@@ -15,9 +15,9 @@ export const AVATARS = [
   { id: 'dragon',  name: 'Drago',    file: 'Pg3.png',  icon: '🐉' },
   { id: 'owl',     name: 'Gufo',     file: 'Pg4.png',     icon: '🦉' },
   { id: 'octopus', name: 'Polpo',    file: 'Pg5.png', icon: '🐙' },
-  { id: 'unicorn', name: 'Unicorno', file: 'Pg6.jpg', icon: '🦄' },
-  { id: 'bear',    name: 'Orso',     file: 'Pg7.jpg',    icon: '🐻' },
-  { id: 'eagle',   name: 'Aquila',  file: 'Pg8.jpg',   icon: '🦅' },
+  { id: 'unicorn', name: 'Unicorno', file: 'Pg6.png', icon: '🦄' },
+  { id: 'bear',    name: 'Orso',     file: 'Pg7.png',    icon: '🐻' },
+  { id: 'eagle',   name: 'Aquila',  file: 'Pg8.png',   icon: '🦅' },
 ];
 
 export function getAvatar(id) {

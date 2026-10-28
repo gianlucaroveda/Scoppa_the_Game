@@ -4,18 +4,11 @@ import { PHASES } from '../config.js';
 import { renderPlayersGrid } from './render.js';
 
 const VIEWS = { lobby: 'view-lobby', avatars: 'view-avatars', game: 'view-game' };
-const SUBTITLES = {
-  lobby: 'Fase: Creazione e Gestione Stanza',
-  avatars: 'Fase: Scelta Avatar',
-  game: 'Fase: Partita in Corso (Campo da Gioco)',
-};
-
 export function switchView(viewName) {
   Object.entries(VIEWS).forEach(([name, id]) => {
     document.getElementById(id).classList.toggle('hidden', name !== viewName);
   });
   document.getElementById('btn-leave-game').classList.toggle('hidden', viewName === 'lobby');
-  document.getElementById('view-subtitle').innerText = SUBTITLES[viewName];
 }
 
 // La schermata dipende dalla fase della partita (state.game.phase): l'host la decide, tutti la seguono.

@@ -7,6 +7,7 @@ import { sendToAll, notify } from './protocol.js';
 import { logNetwork, showToast } from '../ui/toast.js';
 import { renderAll } from '../ui/render.js';
 import { createPlayer } from '../game/scoring.js';
+import { playSound } from '../ui/sound.js';
 import { hostHandleDraw, hostHandlePlayCard } from '../game/deck.js';
 import { hostHandleSelectAvatar } from '../game/avatars.js';
 import { hostHandleAttackTarget, hostHandleAttackCards, hostOnPlayerLeft } from '../game/turns.js';
@@ -20,6 +21,7 @@ const handlers = {
     }
     state.roomPlayers[id] = createPlayer(data.name || 'Giocatore', false);
     showToast(`${state.roomPlayers[id].name} è entrato!`, 'info');
+    playSound('playerJoined');
     broadcastStateUpdate();
   },
   [MSG.UPDATE_NAME]: (id, data) => {
@@ -44,6 +46,7 @@ export function handleIncomingConnection(conn) {
     delete state.clientConnections[conn.peer];
     if (!state.roomPlayers[conn.peer]) return; // non era un giocatore (rifiutato o stanza chiusa)
     delete state.roomPlayers[conn.peer];
+    playSound('playerLeft');
     hostOnPlayerLeft(conn.peer);
     broadcastStateUpdate();
   });

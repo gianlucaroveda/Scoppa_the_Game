@@ -5,18 +5,27 @@ import { logNetwork, showToast } from '../ui/toast.js';
 import { renderAll, renderMyHand } from '../ui/render.js';
 import { cleanupPeer } from './peer.js';
 import { showCardAnimation, showDrawAnimation } from '../ui/animations.js';
+import { playSound } from '../ui/sound.js';
 
 export function handleClientReceivedData(data) {
   logNetwork(`RX dall'Host: <b class="text-amber-300">${data.type}</b>`);
 
   switch (data.type) {
-    case MSG.STATE_UPDATE:
+    case MSG.STATE_UPDATE: {
+      const before = Object.keys(state.roomPlayers);
       state.roomPlayers = data.roomPlayers;
       state.playedTableCard = data.playedTableCard;
       state.game = data.game;
       state.deckCount = data.deckCount;
+      // suoni: qualcuno è entrato / uscito dalla stanza (il primo aggiornamento, quando entri tu, non conta)
+      if (before.length) {
+        const after = Object.keys(data.roomPlayers);
+        if (after.some(id => !before.includes(id))) playSound('playerJoined');
+        else if (before.some(id => !after.includes(id))) playSound('playerLeft');
+      }
       renderAll();
       break;
+    }
 
     case MSG.MY_HAND: {
       const gained = data.hand.length - state.myHand.length;

@@ -4,6 +4,7 @@ import { PHASE_BANNER_MS } from '../settings.js';
 import { getCardDef } from '../game/cards/cardDefs.js';
 import { cardFaceHTML } from './cardFace.js';
 import { renderMyHand } from './render.js';
+import { playSound } from './sound.js';
 
 /* ---------- coda: le animazioni vanno una alla volta, nell'ordine di arrivo ---------- */
 const queue = [];
@@ -36,12 +37,20 @@ const FX_BADGES = {
   heal:   ['💚', 'fx-badge--heal'],
   info:   ['⚔️', 'fx-badge--info'],
   poison: ['☠️', 'fx-badge--poison'],
+  safe:   ['🛡️', 'fx-badge--heal'],   // schivato / già al massimo (nessun suono)
 };
 
 async function playCardOverlay(payload) {
   const { mode = 'activate', message = '', cards = [] } = payload || {};
   if (!cards.length) return;
   const isDestroy = mode === 'destroy';
+
+  // Suoni sincronizzati con l'animazione: carta giocata / distrutta, poi danno e/o cura mostrati nei badge
+  playSound(isDestroy ? 'destroyCard' : 'playCard');
+  const kinds = new Set(cards.flatMap(c => (c.effects || []).map(e => e.type)));
+  let delay = 350;
+  if (kinds.has('damage')) { setTimeout(() => playSound('damage'), delay); delay += 350; }
+  if (kinds.has('heal')) setTimeout(() => playSound('heal'), delay);
 
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
@@ -117,6 +126,7 @@ async function playDraw({ playerId, count, uids }) {
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     el.className = 'card-back fly-card';
+    setTimeout(() => playSound('draw'), i * stagger); // un suono per ogni carta, quando parte il suo volo
     document.body.appendChild(el);
     el.style.left = `${from.left + from.width / 2 - el.offsetWidth / 2}px`;
     el.style.top = `${from.top + from.height / 2 - el.offsetHeight / 2}px`;
@@ -161,7 +171,7 @@ function describePhase() {
     case PHASES.START:
       return g.currentPlayerId === me ? { cls: 'start', title: 'PESCA O ATTIVA UNA CARTA', sub: 'Il tuo turno' } : null;
     case PHASES.ATTACK:
-      return g.currentPlayerId === me ? { cls: 'attack', title: 'ATTACCA!', sub: 'Scegli un avversario' } : null;
+      return g.currentPlayerId === me ? { cls: 'attack', title: 'ATTACCA!', sub: 'Clicca un giocatore e scegli che carta distruggere' } : null;
     case PHASES.ATTACK_PICK: // solo il contrattacco (l'attacco normale è già stato annunciato da ATTACK)
       return g.counter && a.attackerId === me ? { cls: 'pick', title: 'CONTRATTACCO!', sub: `Scegli la carta da distruggere a ${nameOf(a.targetId)}` } : null;
     default:
@@ -205,8 +215,8 @@ async function playPhaseBanner({ cls, title, sub }) {
   const el = document.createElement('div');
   el.className = `phase-banner phase-banner--${cls}`;
   
-  // Spostato un po' più in basso con padding-top: 15vh (regolabile se serve)
-  el.style.cssText = 'position:fixed;inset:0;z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;padding-top:15vh;';
+  // Sfondo scuro a tutto schermo (rgba 8,4,16,0.82): fa risaltare la scritta. Più in basso con padding-top: 15vh (regolabile).
+  el.style.cssText = 'position:fixed;inset:0;z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;padding-top:15vh;background:rgba(8,4,16,0.82);';
   
   // Testo molto grande (3.5rem per il titolo) con testo bianco e ombra nera discreta ma definita
   const titleStyle = 'color:#ffffff;font-size:3.5rem;font-weight:800;text-shadow:2px 2px 4px rgba(0,0,0,0.8);line-height:1.1;text-align:center;';

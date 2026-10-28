@@ -118,14 +118,10 @@
 @keyframes card-pulse  { 50% { opacity: .7; } }
 @keyframes fx-bounce   { 50% { transform: translateY(-4px); } }
 
-/* ---------- mobile: la mano si sovrappone a ventaglio, il testo compare sulla carta selezionata ---------- */
+/* ---------- mobile: la mano si sovrappone a ventaglio; l'effetto si legge selezionando la carta ---------- */
 @media (max-width: 699px) {
   .hand > .card + .card { margin-left: -2.2rem; }
-  .hand .card__text { display: none; }
-  .hand .card.card--selected { transform: translateY(-1.8rem) scale(1.55); transform-origin: 50% 100%; }
-  .hand .card--selected .card__text { display: block; font-size: .85rem; }
-  .hand .card--selected .card__art { flex: 0 0 1.6rem; font-size: 1.1rem; }
-  .card--table .card__text, .overlay .card__text { display: block; }
-  .card--table .card__text { font-size: .8rem; }
+  .hand .card.card--selected { transform: translateY(-1.8rem) scale(1.3); transform-origin: 50% 100%; }
   .overlay__title { font-size: .65rem; }
 }
+.card { -webkit-touch-callout: none; touch-action: manipulation; }

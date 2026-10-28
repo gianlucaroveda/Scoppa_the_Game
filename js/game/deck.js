@@ -1,6 +1,6 @@
 // ===== MAZZO, MANI E CARTE GIOCATE =====
 import { state } from '../state.js';
-import { HAND_SIZE, PHASES } from '../config.js';
+import { HAND_SIZE, PHASES, STARTING_HP } from '../config.js';
 import { shuffle } from '../utils.js';
 import { broadcastStateUpdate } from '../network/host.js';
 import { renderAll, renderMyHand } from '../ui/render.js';
@@ -63,6 +63,32 @@ export function hostClearHands() {
   Object.keys(state.roomPlayers).forEach(id => hostSyncHand(id));
 }
 
+/* ---------- riepilogo effetti per i badge dell'animazione ---------- */
+
+// Ritorna [{ text, type }] con type = damage | heal | poison | info | safe. Calcolato PRIMA di applicare gli effetti.
+function summarizeEffects(def, trigger, { ownerId, destroyerId, targetId }) {
+  const name = id => state.roomPlayers[id]?.name ?? '?';
+  const whoId = e => (e.target === 'self' || e.target === 'owner') ? ownerId : e.target === 'destroyer' ? destroyerId : e.target === 'opponent' ? targetId : null;
+  const shielded = id => id !== undefined && id === destroyerId && !!state.game?.attackMods?.ignoreTraps; // Attacco Protetto
+  const out = [];
+  (def?.effects || []).filter(e => e.trigger === trigger).forEach(e => {
+    const pid = whoId(e), who = name(pid);
+    if (e.action === 'damage') {
+      out.push(shielded(pid) ? { text: `${who} schiva il danno`, type: 'safe' }
+                             : { text: `${who} -${modifyByStatus(pid, e.amount)} PV`, type: 'damage' });
+    } else if (e.action === 'heal') {
+      const hp = state.roomPlayers[pid]?.hp ?? STARTING_HP;
+      const gain = Math.min(STARTING_HP - hp, modifyByStatus(pid, e.amount));
+      out.push(gain > 0 ? { text: `${who} +${gain} PV`, type: 'heal' } : { text: `${who}: PV già al massimo`, type: 'safe' });
+    } else if (e.action === 'poison') {
+      out.push(shielded(pid) ? { text: `${who} schiva il veleno`, type: 'safe' } : { text: `${who} avvelenato!`, type: 'poison' });
+    } else if (e.action === 'counterAttack') {
+      out.push({ text: `${name(ownerId)} contrattacca!`, type: 'info' });
+    }
+  });
+  return out;
+}
+
 /* ---------- HOST: azioni dei giocatori ---------- */
 
 export function hostHandleDraw(senderId) {
@@ -104,7 +130,7 @@ export function hostHandlePlayCard(senderId, data) {
   broadcastCardAnimation({
     mode: 'activate',
     message: `${playerName} attiva ${def.name}!`,
-    cards: [{ defId: def.id }]
+    cards: [{ defId: def.id, effects: summarizeEffects(def, 'onPlay', { ownerId: senderId, targetId: data.targetId }) }]
   });
 
   resolveCardEffect(def, { ownerId: senderId, targetId: data.targetId });
@@ -132,31 +158,7 @@ export function hostDestroyCards(ownerId, destroyerId, uids) {
 
     announce(`💥 ${def?.name ?? 'Una carta'} di ${name(ownerId)} viene distrutta da ${name(destroyerId)}`);
 
-    const effectsSummary = [];
-    if (def?.effects) {
-      def.effects.filter(e => e.trigger === 'onDestroy').forEach(e => {
-        const targetPlayerId = e.target === 'owner' ? ownerId : e.target === 'destroyer' ? destroyerId : null;
-        const targetName = name(targetPlayerId);
-
-        if (e.action === 'damage') {
-          if (targetPlayerId === destroyerId && state.game?.attackMods?.ignoreTraps) {
-            effectsSummary.push({ text: `${targetName} schiva il danno`, type: 'heal' });
-          } else {
-            effectsSummary.push({ text: `${targetName} -${modifyByStatus(targetPlayerId, e.amount)} PV`, type: 'damage' });
-          }
-        } else if (e.action === 'heal') {
-          effectsSummary.push({ text: `${targetName} +${modifyByStatus(targetPlayerId, e.amount)} PV`, type: 'heal' });
-        } else if (e.action === 'poison') {
-          if (targetPlayerId === destroyerId && state.game?.attackMods?.ignoreTraps) {
-            effectsSummary.push({ text: `${targetName} schiva il veleno`, type: 'heal' });
-          } else {
-            effectsSummary.push({ text: `${targetName} avvelenato!`, type: 'poison' });
-          }
-        } else if (e.action === 'counterAttack') {
-          effectsSummary.push({ text: `${name(ownerId)} contrattacca!`, type: 'info' });
-        }
-      });
-    }
+    const effectsSummary = summarizeEffects(def, 'onDestroy', { ownerId, destroyerId });
 
     if (def) {
       destroyedCardsPayload.push({

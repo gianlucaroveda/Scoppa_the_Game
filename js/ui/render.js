@@ -34,7 +34,6 @@ export function renderAll() {
   renderDeckCount();
   renderPlayersGrid();
   renderTurnBar();
-  renderDefensePrompt();
   renderOpponentsInGame();
   renderPlayedTableCard();
   renderMyHand();
@@ -73,7 +72,8 @@ export function renderMyHand() {
   const container = $('my-hand');
   if (!container) return;
 
-  $('hand-count').innerText = state.myHand.length;
+  const handCount = $('hand-count');
+  if (handCount) handCount.innerText = state.myHand.length;
   const me = state.roomPlayers[state.peerId];
   $('my-stats').innerHTML = me
     ? (me.eliminated
@@ -220,7 +220,7 @@ export function renderTurnBar() {
       const p = state.roomPlayers[id];
       if (!p) return '';
       const cls = ['chip', id === g.currentPlayerId && 'chip--current', p.eliminated && 'chip--out'].filter(Boolean).join(' ');
-      return `<div class="${cls}"><span class="chip__n">${i + 1}</span>${avatarHTML(p.avatarId, 'xs')}<span>${escapeHtml(p.name)}${id === state.peerId ? ' (Tu)' : ''}</span></div>`; // chip--out mostra 💀 via CSS
+      return `<div class="${cls}"><span class="chip__n">${i + 1}</span>${avatarHTML(p.avatarId, 'sm')}<span>${escapeHtml(p.name)}${id === state.peerId ? ' (Tu)' : ''}</span></div>`; // chip--out mostra 💀 via CSS
     }).join('<span class="chip-sep">▸</span>');
   }
 
@@ -232,7 +232,7 @@ export function renderTurnBar() {
                         : `Turno di ${playerName(g.currentPlayerId)} · fase di inizio`;
       break;
     case PHASES.ATTACK:
-      hint = ctx.active ? '⚔️ Attacco: clicca un avversario per scegliere il bersaglio'
+      hint = ctx.active ? '⚔️ Attacco: clicca un giocatore e scegli che carta distruggere'
                         : `${playerName(g.currentPlayerId)} sta scegliendo il bersaglio`;
       break;
     case PHASES.ATTACK_PICK: {
@@ -256,19 +256,6 @@ export function renderTurnBar() {
   const phaseHintEl = $('phase-hint');
   if (phaseHintEl) phaseHintEl.innerHTML = hint;
 
-}
-
-// Quando vieni attaccato e hai una carta difensiva, scegli: giocarla (due clic sulla carta) oppure non difenderti.
-export function renderDefensePrompt() {
-  const el = $('defense-prompt');
-  if (!el) return;
-  const ctx = myContext();
-  const canDefend = ctx.defender && state.myHand.some(c => getCardDef(c.defId)?.type === 'defense');
-  el.classList.toggle('hidden', !canDefend);
-  if (canDefend) {
-    const attacker = state.roomPlayers[state.game.pendingAttack?.attackerId]?.name ?? '?';
-    $('defense-prompt-text').textContent = `🛡️ ${attacker} ti attacca! Doppio clic su una carta difensiva per attivarla · un clic e poi fuori per non usarla`;
-  }
 }
 
 export function renderOpponentsInGame() {

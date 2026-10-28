@@ -22,20 +22,30 @@
     <link rel="stylesheet" href="css/effects.css">
     <link rel="stylesheet" href="css/crt.css">
 </head>
-<body>
+<body class="crt-off">
 
-    <!-- HEADER -->
+    <!-- HEADER: ruolo a sinistra, turni dei giocatori al centro, Menu ed Esci a destra -->
     <header class="topbar">
-        <div class="topbar__brand">
-            <div class="topbar__logo">♠</div>
-            <div>
-                <h1 class="topbar__title">CARD ENGINE</h1>
-                <p id="view-subtitle" class="topbar__sub">Fase: Creazione e Gestione Stanza</p>
-            </div>
-        </div>
+        <div class="topbar__left"><span id="role-badge" class="badge">Disconnesso</span></div>
+
+        <div id="turn-order" class="turn-order"></div>
+
         <div class="topbar__actions">
-            <span id="role-badge" class="badge">Disconnesso</span>
-            <button data-action="toggleCrt" class="btn btn--sm btn--cyan" title="Attiva/disattiva effetto CRT">CRT</button>
+            <div class="menu">
+                <button id="btn-menu" class="btn btn--sm btn--cyan" title="Impostazioni"><i class="fa-solid fa-gear"></i> <span>Menu</span></button>
+                <div id="settings-panel" class="settings hidden">
+                    <div class="settings__title">Impostazioni</div>
+                    <label class="settings__row">
+                        <span>Volume</span>
+                        <input id="volume-range" type="range" min="0" max="100" step="1" value="60">
+                        <span id="volume-value" class="settings__value">60%</span>
+                    </label>
+                    <label class="settings__row">
+                        <span>Effetto CRT</span>
+                        <input id="crt-toggle" type="checkbox" class="switch">
+                    </label>
+                </div>
+            </div>
             <button id="btn-leave-game" data-action="leaveRoom" class="btn btn--sm btn--danger hidden">
                 <i class="fa-solid fa-right-from-bracket"></i> <span>Esci</span>
             </button>
@@ -118,13 +128,6 @@
                 </div>
             </div>
 
-            <div id="turn-bar" class="turn-bar">
-                <div id="turn-order" class="turn-order"></div>
-                <div class="turn-bar__right">
-                    <div id="phase-hint" class="phase-hint"></div>
-                </div>
-            </div>
-
             <div id="opponents-game-container" class="opps"></div>
 
             <div class="table-center">
@@ -144,11 +147,8 @@
             </div>
 
             <div class="me">
-                <div id="defense-prompt" class="defense-prompt hidden">
-                    <span id="defense-prompt-text"></span>
-                </div>
                 <div class="me__bar">
-                    <span class="me__label"><i class="fa-solid fa-lock"></i> Mano (<span id="hand-count">0</span>)</span>
+                    <div id="phase-hint" class="phase-hint"></div>
                     <span id="my-stats" class="me__stats"></span>
                 </div>
                 <div id="my-hand" class="hand">
