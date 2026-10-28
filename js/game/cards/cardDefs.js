@@ -139,12 +139,12 @@ export const CARD_DEFS = {
 };
 
 export const DECK_LIST = {
-  attack_boost: 5,
-  spiked_trap: 5,
-  cursed_idol: 5,
-  cursed_idol1: 5,
-  dummy: 6,
-  dummy1: 6,
+  attack_boost: 7,
+  spiked_trap: 6,
+  cursed_idol: 6,
+  cursed_idol1: 6,
+  dummy: 5,
+  dummy1: 5,
   safe_attack: 5,
   safe_attack1: 5,
   minor_heal: 5,
