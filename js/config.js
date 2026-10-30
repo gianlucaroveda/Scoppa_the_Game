@@ -2,7 +2,7 @@
 
 export const MIN_PLAYERS = 2;
 export const HAND_SIZE = 5;            // carte in mano all'inizio della partita
-export const STARTING_HP = 3;          // PV iniziali di ogni giocatore
+export const STARTING_HP = 4;          // PV iniziali di ogni giocatore
 export const POINTS_TO_WIN = 10;       // punti per vincere (se usate la vittoria a punti)
 export const ATTACK_DESTROY_COUNT = 1; // carte distrutte da un attacco (modificabile da effetti 'attackMod', vedi effects.js)
 
