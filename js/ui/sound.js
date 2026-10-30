@@ -26,7 +26,7 @@ const SOUNDS = {
   playerJoined: { file: 'player-joined.mp3', synth: [tone(988, 0, .08), tone(1319, .08, .2)] },                              // qualcuno entra nella lobby
   playerLeft:   { file: 'player-left.mp3',   synth: [tone(659, 0, .09), tone(392, .09, .2)] },                               // qualcuno esce dalla stanza
   leaveButton:  { file: 'leave-room.mp3',    synth: [{ f: 700, f2: 180, t: 0, d: .28, type: 'sawtooth', v: .22 }] },          // bottoni "Esci" / "Chiudi stanza"
-  heal:         { file: 'cura.wav',         synth: [{ f: 523, t: 0, d: .12, type: 'triangle', v: .3 }, { f: 784, t: .09, d: .12, type: 'triangle', v: .3 }, { f: 1047, t: .18, d: .22, type: 'triangle', v: .3 }] }, // cura
+  heal:         { file: 'heal.mp3',         synth: [{ f: 523, t: 0, d: .12, type: 'triangle', v: .3 }, { f: 784, t: .09, d: .12, type: 'triangle', v: .3 }, { f: 1047, t: .18, d: .22, type: 'triangle', v: .3 }] }, // cura
   damage:       { file: 'damage.mp3',       synth: [{ noise: true, t: 0, d: .16, v: .5, f: 900 }, { f: 220, f2: 70, t: 0, d: .2, type: 'sawtooth', v: .35 }] },                                // danno inflitto
   destroyCard:  { file: 'destroy-card.mp3', synth: [{ noise: true, t: 0, d: .28, v: .55, f: 1800 }, { f: 300, f2: 60, t: 0, d: .3, type: 'square', v: .25 }] },                                 // carta distrutta
   draw:         { file: 'draw-card.mp3',     synth: [{ noise: true, t: 0, d: .09, v: .35, f: 3200 }, { f: 1300, f2: 650, t: 0, d: .06, v: .1 }] }, // carta pescata

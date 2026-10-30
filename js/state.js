@@ -31,6 +31,7 @@ export function resetState() {
     myHand: [],               // [{ uid, defId }] solo tu la vedi (copia inviata dall'host)
     hands: {},                // SOLO HOST: { playerId: [carte] } fonte di verità delle mani
     masterDeck: [],           // SOLO HOST: mai inviato ai client
+    discardPile: [],          // SOLO HOST: carte giocate e distrutte; quando il mazzo finisce vengono rimescolate e ricreano il mazzo
     ui: { cardPick: null, selectedCard: null, destroyPicks: [], hiddenUids: [], revealing: {} },
 // selectedCard: carta alzata col primo clic; hiddenUids: carte appena pescate, nascoste finché non arriva l'animazione
   });

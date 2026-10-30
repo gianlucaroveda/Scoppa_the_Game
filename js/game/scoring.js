@@ -4,7 +4,14 @@ import { state } from '../state.js';
 import { STARTING_HP, POINTS_TO_WIN, PHASES } from '../config.js';
 
 export function createPlayer(name, isHost) {
-  return { name, isHost, handCount: 0, avatarId: null, hp: STARTING_HP, points: 0, eliminated: false, poison: 0, poisonTurn: 0 };
+  return { name, isHost, handCount: 0, avatarId: null, hp: STARTING_HP, points: 0, eliminated: false, poison: 0, poisonTurn: 0, rematchReady: false };
+}
+
+// Rivincita: tutti tornano ai valori iniziali (nome, ruolo e avatar restano).
+export function hostResetPlayers() {
+  Object.values(state.roomPlayers).forEach(p => {
+    p.hp = STARTING_HP; p.points = 0; p.eliminated = false; p.poison = 0; p.poisonTurn = 0; p.rematchReady = false;
+  });
 }
 
 /* ---------- stato avvelenamento ---------- */

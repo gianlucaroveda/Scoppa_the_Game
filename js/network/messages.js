@@ -8,6 +8,7 @@ export const MSG = {
   SELECT_AVATAR: 'SELECT_AVATAR',   // { avatarId }
   ATTACK_TARGET: 'ATTACK_TARGET',   // { targetId }
   ATTACK_CARDS: 'ATTACK_CARDS',     // { indices } posizioni (a carte coperte) nella mano del bersaglio
+  REMATCH_READY: 'REMATCH_READY',   // (nessun dato) a fine partita: segna / annulla "pronto per la rivincita"
   // host -> client
   STATE_UPDATE: 'STATE_UPDATE',
   MY_HAND: 'MY_HAND',               // { hand } la tua mano aggiornata

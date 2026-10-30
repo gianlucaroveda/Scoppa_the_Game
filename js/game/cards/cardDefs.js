@@ -127,14 +127,17 @@ export const CARD_DEFS = {
     effects: [{ trigger: 'onDestroy', action: 'counterAttack' }],
   },
 
-  // Avvelenamento: danni e cure ricevuti x2 per 3 turni (contati a ogni turno che passa, di chiunque).
-  // Chi è avvelenato e attacca contagia il bersaglio (se non è già avvelenato).
+  // AIDS: sia GIOCATA sia DISTRUTTA avvelena TUTTI i giocatori per 3 turni (danni e cure ricevuti x2, contati a ogni turno che passa).
+  // Con Attacco Protetto, se viene distrutta viene solo distrutta.
   venom: {
     id: 'venom',
     name: 'AIDS',
     type: 'spell',
-    text: 'AIDS per 3 turni: danni e cure ricevuti valgono il doppio. Chi attacchi viene contagiato.',
-    effects: [{ trigger: 'onPlay', action: 'poison', target: 'self' }],
+    text: 'Quando viene giocata o distrutta infetta tutti i giocatori per 3 turni: danni e cure ricevuti valgono il doppio.',
+    effects: [
+      { trigger: 'onPlay', action: 'poisonAll' },
+      { trigger: 'onDestroy', action: 'poisonAll' },
+    ],
   },
 };
 

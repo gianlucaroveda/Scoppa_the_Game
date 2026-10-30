@@ -10,6 +10,7 @@ import { shieldSelf } from './shieldSelf.js';
 import { resetAndDeal } from './resetAndDeal.js';
 import { counterAttack } from './counterAttack.js';
 import { poison } from './poison.js';
+import { poisonAll } from './poisonAll.js';
 
 export const EFFECT_ACTIONS = {
   damage,
@@ -19,4 +20,5 @@ export const EFFECT_ACTIONS = {
   resetAndDeal,
   counterAttack,
   poison,
+  poisonAll,
 };

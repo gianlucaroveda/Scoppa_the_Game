@@ -3,6 +3,7 @@
 // Qui c'è solo il codice che, data una carta e un trigger, esegue i suoi effetti. Gira solo sull'HOST.
 import { state } from '../../state.js';
 import { hostCheckVictory } from '../scoring.js';
+import { hostCollectEliminatedHands } from '../deck.js';
 import { EFFECT_ACTIONS } from './actions/index.js';
 
 export { EFFECT_ACTIONS };
@@ -28,4 +29,5 @@ export function resolveCardEffect(card, { ownerId, targetId, destroyerId, trigge
     if (action) action({ ownerId, destroyerId, targetId: resolveTargetId(effect, { ownerId, targetId, destroyerId }), effect });
   });
   hostCheckVictory();
+  hostCollectEliminatedHands(); // chi è stato eliminato rimette le sue carte nel mazzo
 }

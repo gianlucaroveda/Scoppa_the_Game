@@ -18,6 +18,7 @@ let nextUid = 1;
 
 export function generateMasterDeck() {
   state.masterDeck = [];
+  state.discardPile = []; // carte giocate/distrutte (SOLO HOST): quando il mazzo finisce tornano a formare il nuovo mazzo
   for (const [defId, copies] of Object.entries(DECK_LIST)) {
     for (let i = 0; i < copies; i++) state.masterDeck.push({ uid: nextUid++, defId });
   }
@@ -42,7 +43,9 @@ export function hostSyncHand(playerId, drawnUids = []) {
 export function drawCards(playerId, n, animate = true) {
   if (!state.hands[playerId]) state.hands[playerId] = [];
   const drawnUids = [];
-  while (drawnUids.length < n && state.masterDeck.length > 0) {
+  while (drawnUids.length < n) {
+    if (state.masterDeck.length === 0) refillDeckFromDiscard(); // mazzo finito: si ricrea con gli scarti
+    if (state.masterDeck.length === 0) break;                   // niente scarti: davvero finito
     const card = state.masterDeck.pop();
     state.hands[playerId].push(card);
     drawnUids.push(card.uid);
@@ -54,13 +57,49 @@ export function drawCards(playerId, n, animate = true) {
   return drawn;
 }
 
+// Distribuisce n carte a testa, ma NON a chi è eliminato.
 export function hostDealHands(n, animate = false) {
-  Object.keys(state.roomPlayers).forEach(id => drawCards(id, n, animate));
+  Object.entries(state.roomPlayers).forEach(([id, p]) => { if (!p.eliminated) drawCards(id, n, animate); });
 }
 
 export function hostClearHands() {
   state.hands = {};
   Object.keys(state.roomPlayers).forEach(id => hostSyncHand(id));
+}
+
+/* ---------- scarti e carte degli eliminati ---------- */
+
+function discard(card) {
+  if (!state.discardPile) state.discardPile = [];
+  state.discardPile.push(card);
+}
+
+// Quando il mazzo è finito, tutte le carte giocate e distrutte vengono rimescolate e formano il nuovo mazzo.
+// Le carte in mano ai giocatori non si toccano. Ritorna true se il mazzo è stato ricreato.
+export function refillDeckFromDiscard() {
+  const pile = state.discardPile || [];
+  if (state.masterDeck.length > 0 || pile.length === 0) return false;
+  state.masterDeck = shuffle(pile.splice(0, pile.length));
+  announce(`🔀 Mazzo finito: ${state.masterDeck.length} carte scartate rimescolate nel nuovo mazzo`);
+  return true;
+}
+
+// Un giocatore eliminato rimette le carte che aveva in mano nel mazzo (rimescolato).
+// Si chiama dopo ogni effetto che può togliere PV (effects.js).
+export function hostCollectEliminatedHands() {
+  let moved = 0;
+  Object.entries(state.roomPlayers).forEach(([id, p]) => {
+    const hand = state.hands[id];
+    if (!p.eliminated || !hand?.length) return;
+    moved += hand.length;
+    state.masterDeck.push(...hand);
+    hand.length = 0;
+    hostSyncHand(id);
+  });
+  if (moved) {
+    shuffle(state.masterDeck);
+    announce(`🔀 Le ${moved} carte dell'eliminato tornano nel mazzo`);
+  }
 }
 
 /* ---------- riepilogo effetti per i badge dell'animazione ---------- */
@@ -82,6 +121,10 @@ function summarizeEffects(def, trigger, { ownerId, destroyerId, targetId }) {
       out.push(gain > 0 ? { text: `${who} +${gain} PV`, type: 'heal' } : { text: `${who}: PV già al massimo`, type: 'safe' });
     } else if (e.action === 'poison') {
       out.push(shielded(pid) ? { text: `${who} schiva il veleno`, type: 'safe' } : { text: `${who} avvelenato!`, type: 'poison' });
+    } else if (e.action === 'poisonAll') {
+      out.push(trigger === 'onDestroy' && state.game?.attackMods?.ignoreTraps
+        ? { text: 'Attacco Protetto: viene solo distrutta', type: 'safe' }
+        : { text: 'Tutti i giocatori avvelenati!', type: 'poison' });
     } else if (e.action === 'counterAttack') {
       out.push({ text: `${name(ownerId)} contrattacca!`, type: 'info' });
     }
@@ -94,8 +137,7 @@ function summarizeEffects(def, trigger, { ownerId, destroyerId, targetId }) {
 export function hostHandleDraw(senderId) {
   const g = state.game;
   if (g.phase === PHASES.START && senderId === g.currentPlayerId) {
-    if (state.masterDeck.length === 0) announce('Mazzo esaurito: nessuna carta da pescare');
-    else drawCards(senderId, 1);
+    if (drawCards(senderId, 1) === 0) announce('Mazzo esaurito: nessuna carta da pescare'); // senza carte si passa comunque avanti
     hostAfterStartAction();
   } else if (g.phase === PHASES.DEFENSE && g.pendingAttack?.targetId === senderId) {
     hostResolveUndefendedAttack();
@@ -122,6 +164,7 @@ export function hostHandlePlayCard(senderId, data) {
 
   const [card] = hand.splice(idx, 1);
   state.playedTableCard = card;
+  discard(card);
   hostSyncHand(senderId);
 
   const playerName = state.roomPlayers[senderId]?.name ?? '?';
@@ -153,6 +196,7 @@ export function hostDestroyCards(ownerId, destroyerId, uids) {
     const idx = hand.findIndex(c => c.uid === uid);
     if (idx < 0) continue;
     const [card] = hand.splice(idx, 1);
+    discard(card);
     const def = getCardDef(card.defId);
     destroyed++;
 

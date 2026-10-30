@@ -186,6 +186,8 @@ export function announcePhaseChange() {
     lastPhaseKey = null; lastTurnNumber = 0; lastTurnOwner = null;
     return;
   }
+  // rivincita: il numero di turno ricomincia da 1, quindi si azzerano i contatori
+  if (g.turnNumber < lastTurnNumber) { lastPhaseKey = null; lastTurnNumber = 0; lastTurnOwner = null; }
 
   // FINE TURNO: compare a chi aveva il turno quando il turno passa a un altro
   if (g.turnNumber > lastTurnNumber) {
@@ -243,6 +245,8 @@ const knownOut = new Set();
 export function announceEliminations() {
   const g = state.game;
   if (g.phase === PHASES.LOBBY || g.phase === PHASES.AVATAR_SELECT) { knownOut.clear(); return; }
+  // dopo una rivincita i giocatori tornano in vita: potranno essere annunciati di nuovo
+  [...knownOut].forEach(id => { if (!state.roomPlayers[id]?.eliminated) knownOut.delete(id); });
   Object.entries(state.roomPlayers).forEach(([id, p]) => {
     if (!p.eliminated || knownOut.has(id)) return;
     knownOut.add(id);

@@ -11,7 +11,7 @@ import { broadcastStateUpdate } from '../network/host.js';
 import { renderAll } from '../ui/render.js';
 import { generateMasterDeck, hostClearHands, hostDealHands, hostDestroyCards, drawCards, playerPlayCard } from './deck.js';
 import { allAvatarsChosen } from './avatars.js';
-import { hostCheckVictory, hostPoisonPlayer, hostTickPoison, isPoisoned } from './scoring.js';
+import { hostCheckVictory, hostPoisonPlayer, hostTickPoison, hostResetPlayers, isPoisoned } from './scoring.js';
 import { POISON_DURATION_TURNS } from '../settings.js';
 import { getCardDef } from './cards/cardDefs.js';
 
@@ -81,6 +81,32 @@ export function hostBeginMatch() {
   generateMasterDeck();
   hostClearHands();
   hostDealHands(HAND_SIZE);
+}
+
+// Rivincita: stessa stanza, stessi giocatori e avatar. PV, punti, veleno ed eliminazioni si azzerano e parte una nuova partita.
+export function hostRematch() {
+  hostResetPlayers(); // azzera anche i "pronto"
+  hostBeginMatch();   // nuovo ordine di turno, nuovo mazzo (scarti azzerati) e nuove mani
+}
+
+// A fine partita ogni giocatore preme "Rivincita" = pronto (di nuovo = annulla). Quando TUTTI quelli presenti nella stanza
+// sono pronti la partita riparte. Se qualcuno esce, ne servono di meno (vedi hostOnPlayerLeft).
+export function hostHandleRematchReady(senderId) {
+  const p = state.roomPlayers[senderId];
+  if (state.game.phase !== PHASES.GAME_OVER || !p) return;
+  p.rematchReady = !p.rematchReady;
+  hostCheckRematchStart();
+  broadcastStateUpdate();
+}
+
+// Parte la rivincita se tutti i giocatori rimasti sono pronti (e sono almeno MIN_PLAYERS). Ritorna true se è partita.
+export function hostCheckRematchStart() {
+  const players = Object.values(state.roomPlayers);
+  if (state.game.phase !== PHASES.GAME_OVER) return false;
+  if (players.length < MIN_PLAYERS || !players.every(p => p.rematchReady)) return false;
+  hostRematch();
+  announce('🔁 Tutti pronti: rivincita!');
+  return true;
 }
 
 /* ---------- HOST: transizioni di fase ---------- */
@@ -228,10 +254,13 @@ function scheduleAutoResolve(attack) {
 // Un giocatore è uscito (già rimosso da roomPlayers): tiene in piedi la partita.
 export function hostOnPlayerLeft(id) {
   const g = state.game;
+  const leftCards = state.hands[id];
+  if (leftCards?.length) { state.masterDeck.push(...leftCards); shuffle(state.masterDeck); } // le sue carte tornano nel mazzo
   delete state.hands[id];
   const remaining = Object.keys(state.roomPlayers);
 
-  if (g.phase === PHASES.LOBBY || g.phase === PHASES.GAME_OVER) return;
+  if (g.phase === PHASES.LOBBY) return;
+  if (g.phase === PHASES.GAME_OVER) { hostCheckRematchStart(); return; } // chi esce non blocca la rivincita (la stanza si chiude da sola sotto MIN_PLAYERS: network/host.js)
 
   if (g.phase === PHASES.AVATAR_SELECT) {
     if (remaining.length < MIN_PLAYERS) g.phase = PHASES.LOBBY;
@@ -294,4 +323,9 @@ export function playerTogglePick(index) {
     sendAction({ type: MSG.ATTACK_CARDS, indices });
   }
   renderAll();
+}
+
+// A fine partita: "Rivincita" = segnati come pronto (o annulli).
+export function playerRematchReady() {
+  sendAction({ type: MSG.REMATCH_READY });
 }

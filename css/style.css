@@ -7,7 +7,7 @@ body { font-family: 'Inter', sans-serif; }
 /* Sfondo Tavolo da Gioco in Feltro */
 .felt-table {
     background-color: #106b08; /* Colore di riserva (fallback) mentre carica la GIF */
-    background-image: url('sfondo.jpg'); /* GIF animata del feltro */
+    background-image: url('SFONDO.png'); /* GIF animata del feltro */
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;

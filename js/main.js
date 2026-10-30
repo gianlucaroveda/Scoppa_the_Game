@@ -3,6 +3,7 @@
 import { state } from './state.js';
 import { createRoom, joinRoom, startGame, leaveRoom, destroyRoom, updateNickname, copyRoomLink } from './lobby/room.js';
 import { playerDrawCard } from './game/deck.js';
+import { playerRematchReady } from './game/turns.js';
 import { initCrt, toggleCrt } from './ui/crt.js';
 import { playSound } from './ui/sound.js';
 import { initSettingsMenu } from './ui/settingsMenu.js';
@@ -13,12 +14,14 @@ const BUTTON_SOUNDS = {
   joinRoom: 'joinRoom',       // Entra
   leaveRoom: 'leaveButton',   // Esci
   destroyRoom: 'leaveButton', // Chiudi stanza
+  rematch: 'createRoom',      // Rivincita
 };
 
 const actions = {
   createRoom, joinRoom, startGame, leaveRoom, destroyRoom, updateNickname, copyRoomLink,
   playerDrawCard,
   toggleCrt,
+  rematch: playerRematchReady,
 };
 
 document.addEventListener('click', (e) => {

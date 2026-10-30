@@ -1,7 +1,7 @@
 // Lato HOST: riceve le azioni dei giocatori e le smista al modulo di gioco giusto.
 // Per ogni nuova azione: aggiungi il tipo in messages.js e una riga in `handlers`.
 import { state } from '../state.js';
-import { PHASES } from '../config.js';
+import { PHASES, MIN_PLAYERS } from '../config.js';
 import { MSG } from './messages.js';
 import { sendToAll, notify } from './protocol.js';
 import { logNetwork, showToast } from '../ui/toast.js';
@@ -10,7 +10,8 @@ import { createPlayer } from '../game/scoring.js';
 import { playSound } from '../ui/sound.js';
 import { hostHandleDraw, hostHandlePlayCard } from '../game/deck.js';
 import { hostHandleSelectAvatar } from '../game/avatars.js';
-import { hostHandleAttackTarget, hostHandleAttackCards, hostOnPlayerLeft } from '../game/turns.js';
+import { hostHandleAttackTarget, hostHandleAttackCards, hostHandleRematchReady, hostOnPlayerLeft } from '../game/turns.js';
+import { cleanupPeer } from './peer.js';
 
 const handlers = {
   [MSG.JOIN_REQUEST]: (id, data) => {
@@ -35,6 +36,7 @@ const handlers = {
   [MSG.SELECT_AVATAR]: hostHandleSelectAvatar,
   [MSG.ATTACK_TARGET]: hostHandleAttackTarget,
   [MSG.ATTACK_CARDS]: hostHandleAttackCards,
+  [MSG.REMATCH_READY]: hostHandleRematchReady,
 };
 
 export function handleIncomingConnection(conn) {
@@ -48,6 +50,13 @@ export function handleIncomingConnection(conn) {
     delete state.roomPlayers[conn.peer];
     playSound('playerLeft');
     hostOnPlayerLeft(conn.peer);
+    // A fine partita, se in stanza resta meno del minimo la stanza si chiude
+    if (state.game.phase === PHASES.GAME_OVER && Object.keys(state.roomPlayers).length < MIN_PLAYERS) {
+      sendToAll({ type: MSG.ROOM_DESTROYED });
+      cleanupPeer();
+      showToast('Troppi pochi giocatori: la stanza è stata chiusa', 'info');
+      return;
+    }
     broadcastStateUpdate();
   });
 }

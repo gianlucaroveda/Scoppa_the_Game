@@ -306,12 +306,33 @@ export function renderOpponentsInGame() {
   }
 }
 
+// Rivincita: pulsante per tutti + elenco di chi è pronto. Parte quando sono pronti tutti quelli presenti nella stanza.
+function renderRematch() {
+  const players = Object.entries(state.roomPlayers);
+  const ready = players.filter(([, p]) => p.rematchReady).length;
+  const meReady = !!state.roomPlayers[state.peerId]?.rematchReady;
+
+  const btn = $('btn-rematch');
+  if (btn) {
+    btn.innerHTML = meReady ? '<i class="fa-solid fa-check"></i> Pronto · clic per annullare' : '<i class="fa-solid fa-rotate-right"></i> Rivincita';
+    btn.classList.toggle('btn--success', meReady);
+    btn.classList.toggle('btn--primary', !meReady);
+  }
+  const box = $('rematch-status');
+  if (box) {
+    box.innerHTML = `<div class="rematch-status__count">Pronti ${ready} / ${players.length}</div><div class="rematch-status__list">`
+      + players.map(([id, p]) => `<span class="ready-chip ${p.rematchReady ? 'ready-chip--on' : ''}">${avatarHTML(p.avatarId, 'xs')}<span>${escapeHtml(p.name)}${id === state.peerId ? ' (Tu)' : ''}</span><b>${p.rematchReady ? '✓' : '…'}</b></span>`).join('')
+      + '</div>';
+  }
+}
+
 export function renderGameOver() {
   const g = state.game;
   const over = g.phase === PHASES.GAME_OVER;
   const gameOverEl = $('game-over');
   if (gameOverEl) gameOverEl.classList.toggle('hidden', !over);
   if (over) {
+    renderRematch();
     const w = state.roomPlayers[g.winnerId];
     const winnerText = $('winner-text');
     if (winnerText) {
